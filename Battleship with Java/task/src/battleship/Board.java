@@ -2,6 +2,7 @@ package battleship;
 
 class Board {
     private CellState[][] board;
+    private String playerName;
     private int shipsPlaced = 0;
     private int shipsSunk = 0;
 
@@ -9,8 +10,9 @@ class Board {
     int[] shipLengths = {5, 4, 3, 3, 2};
     Ship[] ships = new Ship[5];
 
-    Board(int size) {
+    Board(int size, String playerName) {
         this.board = new CellState[size][size];
+        this.playerName = playerName;
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
                 this.board[i][j] = CellState.FOG;
@@ -19,9 +21,13 @@ class Board {
     }
 
     void createShips() {
+        System.out.printf("\n%s, place your ships on the game board\n", playerName);
+        printBoard();
         while (shipsPlaced < ships.length) {
-            System.out.printf("Enter the coordinates of the %s (%d cells): \n\n", shipNames[shipsPlaced], shipLengths[shipsPlaced]);
+            System.out.printf("\nEnter the coordinates of the %s (%d cells): \n\n", shipNames[shipsPlaced], shipLengths[shipsPlaced]);
             String coordinatesStr = Main.scanner.nextLine();
+            if (coordinatesStr.isEmpty())
+                continue;
             String[] coordinatesSplit = coordinatesStr.split(" ");
 
             int[] coord1 = Helper.translateCoords(coordinatesSplit[0]);
@@ -43,66 +49,69 @@ class Board {
             printBoard();
             shipsPlaced++;
         }
+        System.out.println("\nPress Enter and pass the move to another player");
+        Main.scanner.nextLine();
+        Helper.clearScreen();
+        System.out.println("...");
     }
 
-    void gameLoop() {
-        System.out.println("The game starts!");
-        printBoard(BoardViewMode.FOG);
-        while (shipsSunk != 5) {
-            System.out.println("Take a shot!");
+    void attack(Board target) {
+//        System.out.println("Take a shot!");
+        while (true) {
             String coordinatesStr = Main.scanner.nextLine();
+            if (coordinatesStr.isEmpty())
+                continue;
             int[] coord = Helper.translateCoords(coordinatesStr);
             if (!isInBounds(coord, board.length)) {
                 System.out.println("Error! You entered the wrong coordinates! Try again:");
                 continue;
             }
-            CellState result = shoot(coord);
+            CellState result = shoot(coord, target);
             switch (result) {
                 case HIT -> {
-                    printBoard(BoardViewMode.FOG);
                     System.out.println("You hit a ship!");
-                    registerShipHit(coord);
-                    printBoard();
+                    registerShipHit(target, coord);
+                    break;
                 }
                 case MISS -> {
-                    printBoard(BoardViewMode.FOG);
                     System.out.println("You missed!");
-                    printBoard();
+                    break;
                 }
                 default -> System.out.println("You already shot here. Try again:");
             }
         }
-        System.out.println("You sank the last ship. You won. Congratulations!");
     }
 
-    void registerShipHit(int[] coord) {
-        for (Ship ship: ships) {
+    void registerShipHit(Board target, int[] coord) {
+        for (Ship ship: target.ships) {
             for (int[] shipCoords : ship.getCoords()) {
                 if (coord[0] == shipCoords[0] && coord[1] == shipCoords[1]) {
                     ship.decreaseHealth();
                     if (ship.getHealth() == 0) {
-                        System.out.println("You sank a ship! Specify a new target:");
-                        shipsSunk++;
+                        System.out.println("You sank a ship!");
+                        target.shipsSunk++;
                     }
                 }
             }
         }
+        if (target.shipsSunk == 5)
+            Game.gameEnded = true;
     }
 
     public void setBoardElem(int x, int y, CellState changeTo) {
         board[x][y] = changeTo;
     }
 
-    CellState shoot(int[] coord) {
+    CellState shoot(int[] coord, Board target) {
         CellState cell = board[coord[0]][coord[1]];
 
         switch (cell) {
             case SHIP -> {
-                board[coord[0]][coord[1]] = CellState.HIT;
+                target.setBoardElem(coord[0], coord[1], CellState.HIT);
                 return CellState.HIT;
             }
             case FOG -> {
-                board[coord[0]][coord[1]] = CellState.MISS;
+                target.setBoardElem(coord[0], coord[1], CellState.MISS);
                 return CellState.MISS;
             }
             default -> {
@@ -192,10 +201,13 @@ class Board {
             }
             System.out.println();
         }
-        System.out.println();
     }
 
     enum BoardViewMode {
         REVEALED, FOG
+    }
+
+    public String getName() {
+        return playerName;
     }
 }
