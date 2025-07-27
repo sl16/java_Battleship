@@ -44,13 +44,59 @@ class Board {
         }
     }
 
+    void beginGame() {
+        System.out.println("The game starts!");
+        while (true) {
+            System.out.println("Take a shot!");
+            String coordinatesStr = Main.scanner.nextLine();
+            int[] coord = Helper.translateCoords(coordinatesStr);
+            if (!isInBounds(coord, board.length)) {
+                System.out.println("Error! You entered the wrong coordinates! Try again:");
+                continue;
+            }
+            CellState result = shoot(coord);
+            switch (result) {
+                case HIT -> {
+                    System.out.println("You hit a ship!");
+                    printBoard();
+                    break;
+                }
+                case MISS -> {
+                    System.out.println("You missed!");
+                    printBoard();
+                }
+                default -> System.out.println("You already shot here. Try again:");
+            }
+            // TODO: On hit, change state inside Ship object
+        }
+    }
+
     public void setBoardElem(int x, int y, CellState changeTo) {
         board[x][y] = changeTo;
     }
 
+    CellState shoot(int[] coord) {
+        CellState cell = board[coord[0]][coord[1]];
+
+        switch (cell) {
+            case SHIP -> {
+                board[coord[0]][coord[1]] = CellState.HIT;
+                return CellState.HIT;
+            }
+            case FOG -> {
+                board[coord[0]][coord[1]] = CellState.MISS;
+                return CellState.MISS;
+            }
+            default -> {
+                return cell;
+            }
+        }
+    }
+
+
     boolean isValidPlacement(int[] coords1, int[] coords2, int[][] coordPlacement) {
         // Check if ship is in a straight line
-        if (coords1[0] != coords2[0] && coords1[1] != coords2[1]) {
+        if (!isStraightLine(coords1, coords2)) {
             System.out.println("Error! The ship must be in a straight line.");
             return false;
         }
@@ -62,6 +108,13 @@ class Board {
         // Check if coordinates touch another ship (up, down, left, right, middle)
         if (isPlacedTooClose(coordPlacement)) {
             System.out.println("Error! You placed it too close to another one.");
+            return false;
+        }
+        return true;
+    }
+
+    boolean isStraightLine(int[] coords1, int[] coords2) {
+        if (coords1[0] != coords2[0] && coords1[1] != coords2[1]) {
             return false;
         }
         return true;
@@ -91,8 +144,8 @@ class Board {
         return false;
     }
 
-    boolean isInBounds(int[] coord, int size) {
-        return (coord[0] >= 0 && coord[0] < size && coord[1] >= 0 && coord[1] < size);
+    boolean isInBounds(int[] coord, int boardSize) {
+        return (coord[0] >= 0 && coord[0] < boardSize && coord[1] >= 0 && coord[1] < boardSize);
     }
 
     void printBoard() {
