@@ -9,7 +9,7 @@ public class Main {
         Board board = new Board(10);
         board.printBoard();
         board.createShips();
-        board.beginGame();
+        board.gameLoop();
 
         scanner.close();
     }

@@ -3,6 +3,7 @@ package battleship;
 class Board {
     private CellState[][] board;
     private int shipsPlaced = 0;
+    private int shipsSunk = 0;
 
     String[] shipNames = {"Aircraft Carrier", "Battleship", "Submarine", "Cruiser", "Destroyer"};
     int[] shipLengths = {5, 4, 3, 3, 2};
@@ -44,10 +45,10 @@ class Board {
         }
     }
 
-    void beginGame() {
+    void gameLoop() {
         System.out.println("The game starts!");
         printBoard(BoardViewMode.FOG);
-        while (true) {
+        while (shipsSunk != 5) {
             System.out.println("Take a shot!");
             String coordinatesStr = Main.scanner.nextLine();
             int[] coord = Helper.translateCoords(coordinatesStr);
@@ -60,8 +61,8 @@ class Board {
                 case HIT -> {
                     printBoard(BoardViewMode.FOG);
                     System.out.println("You hit a ship!");
+                    registerShipHit(coord);
                     printBoard();
-                    break;
                 }
                 case MISS -> {
                     printBoard(BoardViewMode.FOG);
@@ -70,7 +71,21 @@ class Board {
                 }
                 default -> System.out.println("You already shot here. Try again:");
             }
-            // TODO: On hit, change state inside Ship object
+        }
+        System.out.println("You sank the last ship. You won. Congratulations!");
+    }
+
+    void registerShipHit(int[] coord) {
+        for (Ship ship: ships) {
+            for (int[] shipCoords : ship.getCoords()) {
+                if (coord[0] == shipCoords[0] && coord[1] == shipCoords[1]) {
+                    ship.decreaseHealth();
+                    if (ship.getHealth() == 0) {
+                        System.out.println("You sank a ship! Specify a new target:");
+                        shipsSunk++;
+                    }
+                }
+            }
         }
     }
 
@@ -95,7 +110,6 @@ class Board {
             }
         }
     }
-
 
     boolean isValidPlacement(int[] coords1, int[] coords2, int[][] coordPlacement) {
         // Check if ship is in a straight line
