@@ -6,6 +6,18 @@ files:
   - name: test/Tests.java
     visible: false
     learner_created: false
+  - name: src/battleship/Helper.java
+    visible: true
+    learner_created: true
+  - name: src/battleship/CellState.java
+    visible: true
+    learner_created: true
+  - name: src/battleship/Ship.java
+    visible: true
+    learner_created: true
+  - name: src/battleship/Board.java
+    visible: true
+    learner_created: true
 feedback_link: https://hyperskill.org/projects/383/stages/2285/implement#comment
 status: Unchecked
-record: -1
+record: 4

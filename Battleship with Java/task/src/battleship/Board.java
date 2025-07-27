@@ -46,6 +46,7 @@ class Board {
 
     void beginGame() {
         System.out.println("The game starts!");
+        printBoard(BoardViewMode.FOG);
         while (true) {
             System.out.println("Take a shot!");
             String coordinatesStr = Main.scanner.nextLine();
@@ -57,11 +58,13 @@ class Board {
             CellState result = shoot(coord);
             switch (result) {
                 case HIT -> {
+                    printBoard(BoardViewMode.FOG);
                     System.out.println("You hit a ship!");
                     printBoard();
                     break;
                 }
                 case MISS -> {
+                    printBoard(BoardViewMode.FOG);
                     System.out.println("You missed!");
                     printBoard();
                 }
@@ -149,6 +152,10 @@ class Board {
     }
 
     void printBoard() {
+        printBoard(BoardViewMode.REVEALED);
+    }
+
+    void printBoard(BoardViewMode mode) {
         StringBuilder sb = new StringBuilder();
 
         // First line
@@ -162,10 +169,19 @@ class Board {
         for (int i = 0; i < board.length; i++) {
             System.out.printf("%c ", 65 + i);
             for (int j = 0; j < board.length; j++) {
-                System.out.printf("%c ", board[i][j].getSymbol());
+                CellState cell = board[i][j];
+                if (mode == BoardViewMode.FOG && cell == CellState.SHIP) {
+                    System.out.print("~ ");
+                } else {
+                    System.out.print(cell.getSymbol() + " ");
+                }
             }
             System.out.println();
         }
         System.out.println();
+    }
+
+    enum BoardViewMode {
+        REVEALED, FOG
     }
 }
