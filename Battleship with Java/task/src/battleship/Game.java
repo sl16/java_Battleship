@@ -28,7 +28,10 @@ public class Game {
         System.out.printf("\n%s, it's your turn:\n", player.getName());
         player.attack(enemyPlayer);
 
-        System.out.println("\nPress Enter and pass the move to another player");
+        if (gameEnded)
+            return;
+
+        System.out.println("Press Enter and pass the move to another player");
         Main.scanner.nextLine();
         Helper.clearScreen();
         System.out.println("...");
@@ -38,10 +41,9 @@ public class Game {
         System.out.println("The game starts!");
         while (!gameEnded) {
             playerTurn(player1);
+            if (gameEnded)
+                break;
             playerTurn(player2);
         }
-        System.out.println("You sank the last ship. You won. Congratulations!");
     }
-
-
 }

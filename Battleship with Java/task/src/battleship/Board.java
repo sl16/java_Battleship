@@ -21,7 +21,7 @@ class Board {
     }
 
     void createShips() {
-        System.out.printf("\n%s, place your ships on the game board\n", playerName);
+        System.out.printf("\n%s, place your ships on the game field\n\n", playerName);
         printBoard();
         while (shipsPlaced < ships.length) {
             System.out.printf("\nEnter the coordinates of the %s (%d cells): \n\n", shipNames[shipsPlaced], shipLengths[shipsPlaced]);
@@ -69,13 +69,13 @@ class Board {
             CellState result = shoot(coord, target);
             switch (result) {
                 case HIT -> {
-                    System.out.println("You hit a ship!");
+                    System.out.println("\nYou hit a ship!\n");
                     registerShipHit(target, coord);
-                    break;
+                    return;
                 }
                 case MISS -> {
-                    System.out.println("You missed!");
-                    break;
+                    System.out.println("\nYou missed!\n");
+                    return;
                 }
                 default -> System.out.println("You already shot here. Try again:");
             }
@@ -88,14 +88,17 @@ class Board {
                 if (coord[0] == shipCoords[0] && coord[1] == shipCoords[1]) {
                     ship.decreaseHealth();
                     if (ship.getHealth() == 0) {
-                        System.out.println("You sank a ship!");
                         target.shipsSunk++;
+                        if (target.shipsSunk == 5) {
+                            System.out.println("You sank the last ship. You won. Congratulations!");
+                            Game.gameEnded = true;
+                        } else {
+                            System.out.println("You sank a ship!");
+                        }
                     }
                 }
             }
         }
-        if (target.shipsSunk == 5)
-            Game.gameEnded = true;
     }
 
     public void setBoardElem(int x, int y, CellState changeTo) {
@@ -103,7 +106,7 @@ class Board {
     }
 
     CellState shoot(int[] coord, Board target) {
-        CellState cell = board[coord[0]][coord[1]];
+        CellState cell = target.board[coord[0]][coord[1]];
 
         switch (cell) {
             case SHIP -> {
@@ -194,10 +197,13 @@ class Board {
             for (int j = 0; j < board.length; j++) {
                 CellState cell = board[i][j];
                 if (mode == BoardViewMode.FOG && cell == CellState.SHIP) {
-                    System.out.print("~ ");
+                    System.out.print("~");
                 } else {
-                    System.out.print(cell.getSymbol() + " ");
+                    System.out.print(cell.getSymbol());
                 }
+                // Omit printing a trailing space at the end of the row
+                if (j != board.length - 1)
+                    System.out.print(" ");
             }
             System.out.println();
         }
